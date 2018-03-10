@@ -3,24 +3,23 @@
  *
  */
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class CommonHelper {
-
   public static function serveAdminAssets($fileName, $filePath) {
 
-    if(Auth::check()){
+    if( Auth::check() ) {
       $adminAssetsBasePath = public_path().'/admin_assets';
 
       $source = $adminAssetsBasePath.$filePath.$fileName;
 
-      $destDir = public_path(Auth::user()->id.$filePath);
-
-      File::makeDirectory($destDir, 0777, true, true);
+      $destDir = 'public/'.Auth::user()->id.$filePath;
 
       $dest = $destDir.$fileName;
 
-      $res = File::copy($source, $dest);
-      return Auth::user()->id.$filePath.$fileName;
+      Storage::put($dest, file_get_contents($source));
+
+      return Storage::url($dest);
     } else {
       return '';
     }
@@ -28,8 +27,8 @@ class CommonHelper {
 
   public static function removeAdminAssets($id) {
 
-      $destDir = public_path(Auth::user()->id);
-
+      $destDir = storage_path('app/public/'.Auth::user()->id);
+      File::cleanDirectory($destDir);
       File::deleteDirectory($destDir);
   }
 }
